@@ -1,40 +1,27 @@
+var express = require("express");
+var app = express();
 
-import express from "express";
-import fetch from "node-fetch"; // node-fetch를 import
-
-const app = express();
-
-app.get("/weather", async function (req: any, res: any) {
+app.get("/weather", function (req: any, res: any) {
   const { serviceKey, numOfRows, pageNo, base_date, base_time, nx, ny } =
     req.query;
 
-  const api_url =
-    "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst";
-  const queryParams = new URLSearchParams({
-    serviceKey,
-    numOfRows,
-    pageNo,
-    base_date,
-    base_time,
-    nx,
-    ny,
-  } as any).toString();
+  var api_url =
+    "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?";
+  var request = require("request");
+  var options = {
+    url: api_url,
+    qs: { serviceKey, numOfRows, pageNo, base_date, base_time, nx, ny },
+  };
 
-  try {
-    const response = await fetch(`${api_url}?${queryParams}`);
-    const body = await response.text();
-
-    if (response.ok) {
+  request.get(options, function (error: any, response: any, body: any) {
+    if (!error && response.statusCode == 200) {
       res.writeHead(200, { "Content-Type": "application/xml;charset=utf-8" });
       res.end(body);
     } else {
-      res.status(response.status).end();
-      console.log("error = " + response.status);
+      res.status(response.statusCode).end();
+      console.log("error = " + response.statusCode);
     }
-  } catch (error) {
-    console.error("Request failed:", error);
-    res.status(500).end("Internal Server Error");
-  }
+  });
 });
 
 app.listen(3000, function () {
